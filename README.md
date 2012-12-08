@@ -15,7 +15,8 @@ Installation
 Requirements
 ------------
 
-[Pystache](https://github.com/defunkt/pystache)
+- [Django](https://www.djangoproject.com/)
+- [Pystache](https://github.com/defunkt/pystache)
 
 References
 ----------

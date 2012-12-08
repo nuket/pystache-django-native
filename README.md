@@ -20,10 +20,10 @@ Requirements
 References
 ----------
 
-[django.template.Template](https://docs.djangoproject.com/en/dev/ref/templates/api/#django.template.Template)
-[Django - Loading templates](https://docs.djangoproject.com/en/dev/ref/templates/api/#loading-templates)
-[Django - Using an alternative template language](https://docs.djangoproject.com/en/dev/ref/templates/api/#using-an-alternative-template-language)
-[Django - Loader types](https://docs.djangoproject.com/en/dev/ref/templates/api/#loader-types)
+- [django.template.Template](https://docs.djangoproject.com/en/dev/ref/templates/api/#django.template.Template)
+- [Django - Loading templates](https://docs.djangoproject.com/en/dev/ref/templates/api/#loading-templates)
+- [Django - Using an alternative template language](https://docs.djangoproject.com/en/dev/ref/templates/api/#using-an-alternative-template-language)
+- [Django - Loader types](https://docs.djangoproject.com/en/dev/ref/templates/api/#loader-types)
 
 
 License

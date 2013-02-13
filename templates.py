@@ -26,17 +26,51 @@ import pystache
 import os
 
 """
-Based on:
+To use this:
 
-https://docs.djangoproject.com/en/dev/ref/templates/api/#django.template.Template
-https://docs.djangoproject.com/en/dev/ref/templates/api/#loading-templates
-https://docs.djangoproject.com/en/dev/ref/templates/api/#using-an-alternative-template-language
+Update the settings.py file to use the custom Loaders,
+putting them ahead of Django's default Loaders in the
+TEMPLATE_LOADERS setting.
+
+TEMPLATE_LOADERS = (
+    'app.templates.PystacheFilesystemLoader',
+    'app.templates.PystacheAppDirectoriesLoader',
+    [...]
+)
+
+Then simply:
+
+render_to_response('template.mustache', context)
+
 """
 
 class PystacheTemplate():
-    def __init__(self, templateString):
+    """
+    Parses the incoming template string and caches it for rendering.
+
+    Arguments:
+    
+    search_dirs: 
+    Sets the Renderer object's directory search string so that
+    partials work.
+
+    file_extension:
+    The Loader.load_template() function will pass the filename extension
+    of the template being loaded. Partials stored in files are assumed
+    to use the same file_extension as their parent template. 
+
+    i.e. Use the same file_extension for all of your templates.
+
+    Based on:
+
+    https://docs.djangoproject.com/en/dev/ref/templates/api/#django.template.Template
+    https://docs.djangoproject.com/en/dev/ref/templates/api/#loading-templates
+    https://docs.djangoproject.com/en/dev/ref/templates/api/#using-an-alternative-template-language
+    """
+    def __init__(self, templateString, search_dirs=None, file_extension="mustache"):
         self.parsed   = pystache.parse(templateString)
-        self.renderer = pystache.Renderer()
+        self.renderer = pystache.Renderer(search_dirs=search_dirs, 
+                                          file_extension=file_extension)
 
     def render(self, context):
         # Flatten the Django Context into a single dictionary.
@@ -96,40 +130,36 @@ Later loaders would then throw a fit.
 
 EXTENSIONS = ['.handlebars', '.hbs', '.mustache']
 
+
+def load_template(self, template_name, template_dirs=None):
+    """
+    Common function for loading templates, used by both types
+    of custom loaders.
+    """
+
+    # Only allow certain template types.
+    filename, extension = os.path.splitext(template_name)
+    if extension not in EXTENSIONS:
+        raise TemplateDoesNotExist
+
+    source, origin = self.load_template_source(template_name, template_dirs)
+
+    # Take the origin and pass the path into pystache,
+    # so that partials can be resolved.
+    search_dirs = os.path.dirname(origin)
+
+    # Pass the template extension to pystache, so that 
+    # it knows how to load basenamed partials.
+    template = PystacheTemplate(source, 
+                                search_dirs=search_dirs, 
+                                file_extension=extension[1:])
+
+    return template, None
+
 class PystacheAppDirectoriesLoader(app_directories.Loader):
     is_usable = True
-
-    def load_template(self, template_name, template_dirs=None):
-        # Only allow certain template types.
-        filename, extension = os.path.splitext(template_name)
-        if extension not in EXTENSIONS:
-            raise TemplateDoesNotExist
-
-        source, origin = self.load_template_source(template_name, template_dirs)
-        template = PystacheTemplate(source)
-        return template, None
+    load_template = load_template
 
 class PystacheFilesystemLoader(filesystem.Loader):
     is_usable = True
-
-    def load_template(self, template_name, template_dirs=None):
-        # Only allow certain template types.
-        filename, extension = os.path.splitext(template_name)
-        if extension not in EXTENSIONS:
-            raise TemplateDoesNotExist
-
-        source, origin = self.load_template_source(template_name, template_dirs)
-        template = PystacheTemplate(source)
-        return template, None
-
-"""
-Now update the settings.py file to use the custom Loaders,
-putting them ahead of Django's default Loaders in the
-TEMPLATE_LOADERS setting.
-
-TEMPLATE_LOADERS = (
-    'exchange.templates.PystacheFilesystemLoader',
-    'exchange.templates.PystacheAppDirectoriesLoader',
-    [...]
-)
-"""
+    load_template = load_template
